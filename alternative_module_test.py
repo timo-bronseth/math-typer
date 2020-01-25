@@ -1,4 +1,5 @@
 import keyboard
+# Package docs: https://pypi.org/project/keyboard/
 
 
 def keyboard_module_test():

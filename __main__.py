@@ -1,12 +1,11 @@
 """
-end goal: be able to have columns of beliefs, evidence, likelihood ratios, and calculate conclusions.
-It should be practically useful for people who want to do complex belief updates, or keep track of
-how their minds change, or outsource their beliefs (i.e. cease relying on intuition).
+...
 
 Timo Brønseth, January 2020.
 """
-
 from pynput.keyboard import Key, Listener
+# Package docs: https://pythonhosted.org/pynput/
+
 
 # TODO: Choose between these two packages
 #           https://pypi.org/project/keyboard/
