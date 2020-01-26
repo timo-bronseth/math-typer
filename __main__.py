@@ -158,6 +158,14 @@ def replace_matching_symbols() -> None:
         keyboard.type("∅")
         return
 
+    elif is_symbol("inclusive less"):
+        keyboard.type("≤")
+        return
+
+    elif is_symbol("inclusive more"):
+        keyboard.type("≥")
+        return
+
     # Apparently keyboard won't type these.
     # elif is_symbol("natural numbers"):
     #     keyboard.type("ℕ")
