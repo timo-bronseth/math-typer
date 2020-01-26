@@ -1,12 +1,10 @@
 """
-Lets you type math symbols by typing their names and then hitting ctrl + space.
-
-I wrote this in a haste, so I realise some things can be done more elegantly.
-For example, you can only define shortcuts of up to two words, so "for all"
-works but not "if and only if". Write your own fix to it if you need.
-Press space to reset current_word as necessary.
+Lets you type math symbols by first activating CAPS LOCK, typing their names,
+and then deactivating CAPS LOCK again. E.g. '[CAPS] for all [CAPS]' = ∀.
 
 Define your own shortcuts in the replace_matching_symbols function.
+
+OBS! Start it with CAPS LOCK inactive.
 
 Timo Brønseth, January 2020.
 """
@@ -15,36 +13,24 @@ from pynput.keyboard import Key, Listener, Controller
 
 
 # GLOBAL CONSTANTS
-ALPHABET = tuple("abcdefghijklmnopqrstuvwxyz")
+ALPHABET = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"  # Includes space.
 
 # GLOBAL VARIABLES
-last_word = ""  # Need this to check against two-word symbols.
-current_word = ""  # All keyboard presses gets recorded here and then recinded once space is pressed.
+current_phrase = ""  # All characters get recorded here
 keyboard = Controller()
-ctrl_modifier = False
+caps_lock = False  # Start in inactive mode
 
 
-def add_to_word(character: str) -> None:
+def add_to_phrase(character: str) -> None:
     """
-    Updates global word if character is in alphabet.
+    Adds character to global phrase if it is in ALPHABET.
     """
-    global current_word
+    global current_phrase
 
     character = character.replace("'", "")
+    character = " " if character == 'Key.space' else character
     if character in ALPHABET:
-        current_word += character
-
-
-def is_space(key):
-    """
-    Returns True if key is space, False otherwise.
-    """
-    global current_word, last_word
-
-    if key == Key.space:
-        return True
-    else:
-        return False
+        current_phrase += character
 
 
 def is_symbol(symbol: str) -> bool:
@@ -53,34 +39,25 @@ def is_symbol(symbol: str) -> bool:
     defined symbols, and then presses backspace to delete that/those
     words before returning True or False to caller function.
     """
-    global current_word, last_word
-    phrase = last_word + " " + current_word
+    global current_phrase
 
-    if symbol == current_word:
-        # You are currently pressing ctrl, so we only need to
-        # press backspace once to delete the last word you typed.
-        keyboard.press(Key.backspace)
-        keyboard.release(Key.backspace)
-        current_word = ""
+    if symbol == current_phrase.lower():
+
+        # Press backspace as many times as there are letters in current_phrase
+        for letter in current_phrase:
+            keyboard.press(Key.backspace)
+            keyboard.release(Key.backspace)
+
+        # Reset current_phrase
+        current_phrase = ""
         return True
-
-    elif symbol == phrase:
-        # You are currently pressing ctrl, so we only need to
-        # press backspace twice to delete the two last words you typed.
-        keyboard.press(Key.backspace)
-        keyboard.release(Key.backspace)
-        keyboard.press(Key.backspace)
-        keyboard.release(Key.backspace)
-        current_word = ""
-        return True
-
     else:
         return False
 
 
 def replace_matching_symbols() -> None:
-    """..."""
-    global current_word, last_word
+    """Replaces text typed by user with the corresponding symbol, if it exists."""
+    global current_phrase
 
     if is_symbol("and"):
         keyboard.type("∧")
@@ -98,7 +75,7 @@ def replace_matching_symbols() -> None:
         keyboard.type("→")
         return
 
-    elif is_symbol("biconditional"):
+    elif is_symbol("iff") or is_symbol("if and only if") or is_symbol("exclusive conditional"):
         keyboard.type("↔")
         return
 
@@ -106,7 +83,7 @@ def replace_matching_symbols() -> None:
         keyboard.type("∃")
         return
 
-    elif is_symbol("negative existential"):
+    elif is_symbol("negative existential") or is_symbol("there does not exist"):
         keyboard.type("∄")
         return
 
@@ -134,7 +111,7 @@ def replace_matching_symbols() -> None:
         keyboard.type("⊆")
         return
 
-    elif is_symbol("not subset"):
+    elif is_symbol("not a subset"):
         keyboard.type("⊄")
         return
 
@@ -150,7 +127,7 @@ def replace_matching_symbols() -> None:
         keyboard.type("∈")
         return
 
-    elif is_symbol("not element"):
+    elif is_symbol("is not element of"):
         keyboard.type("∉")
         return
 
@@ -158,11 +135,11 @@ def replace_matching_symbols() -> None:
         keyboard.type("∅")
         return
 
-    elif is_symbol("inclusive less"):
+    elif is_symbol("less than or equal to") or is_symbol("inclusive less"):
         keyboard.type("≤")
         return
 
-    elif is_symbol("inclusive more"):
+    elif is_symbol("more than or equal to") or is_symbol("inclusive more"):
         keyboard.type("≥")
         return
 
@@ -197,25 +174,22 @@ def replace_matching_symbols() -> None:
 
 
 def on_press(key):
-    global current_word, last_word, ctrl_modifier
+    global current_phrase, caps_lock
 
-    if is_space(key):
+    # Do these things upon hitting the caps lock key.
+    if key == Key.caps_lock:
+        # Toggle caps_lock variable
+        caps_lock = True if caps_lock is False else False
 
-        # If ctrl was the last pressed key before space, write_matching_symbols
-        if ctrl_modifier:
+        # Check for matching symbols and type them in if caps_lock is being deactivated
+        if caps_lock is False:
             replace_matching_symbols()
-            ctrl_modifier = False
+            current_phrase = ""  # Reset phrase
 
-        # Update words
-        last_word = current_word
-        current_word = ""
-        return
-
-    # Set ctrl_modifier to True if key is ctrl, otherwise reset it
-    ctrl_modifier = True if key == Key.ctrl_l else False
-
-    # Converts the native KeyCode type to str before adding it to current_word
-    add_to_word(key.__str__())
+    # Only add characters to current_phrase if caps lock is on
+    if caps_lock:
+        # Converts the native KeyCode type to str before adding it to current_phrase
+        add_to_phrase(key.__str__())
 
 
 def main():
