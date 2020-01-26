@@ -2,7 +2,7 @@
 Lets you type math symbols by first activating CAPS LOCK, typing their names,
 and then deactivating CAPS LOCK again. E.g. '[CAPS] for all [CAPS]' = ∀.
 
-![how it works](https://drive.google.com/file/d/19fZeOemXVuKTRuI0gKXs27S4RJV2dFS0/)
+![how it works](https://drive.google.com/uc?export=view&id=19fZeOemXVuKTRuI0gKXs27S4RJV2dFS0)
 
 Define your own shortcuts in the replace_matching_symbols function.
 
