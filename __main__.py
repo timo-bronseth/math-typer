@@ -172,6 +172,10 @@ def replace_matching_symbols() -> None:
         keyboard.type("¬")
         return
 
+    elif is_symbol("cup of tea"):
+        keyboard.type("cÚ")
+        return
+
 
 def on_press(key):
     global current_phrase, caps_lock
