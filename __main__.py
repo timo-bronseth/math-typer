@@ -4,6 +4,7 @@ Lets you type math symbols by typing their names and then hitting ctrl + space.
 I wrote this in a haste, so I realise some things can be done more elegantly.
 For example, you can only define shortcuts of up to two words, so "for all"
 works but not "if and only if". Write your own fix to it if you need.
+Press space to reset current_word as necessary.
 
 Define your own shortcuts in the replace_matching_symbols function.
 
