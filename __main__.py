@@ -1,5 +1,11 @@
 """
-...
+Lets you type math symbols by typing their names and then hitting ctrl + space.
+
+I wrote this in a haste, so I realise some things can be done more elegantly.
+For example, you can only define shortcuts of up to two words, so "for all"
+works but not "if and only if". Write your own fix to it if you need.
+
+Define your own shortcuts in the replace_matching_symbols function.
 
 Timo Brønseth, January 2020.
 """
@@ -7,11 +13,12 @@ from pynput.keyboard import Key, Listener, Controller
 # Package docs: https://pythonhosted.org/pynput/
 
 
-# GLOBAL VARIABLES
-LAST_WORD = ""  # Need this to check against two-word symbols.
-CURRENT_WORD = ""  # All keyboard presses gets recorded here and then recinded once space is pressed.
+# GLOBAL CONSTANTS
 ALPHABET = tuple("abcdefghijklmnopqrstuvwxyz")
 
+# GLOBAL VARIABLES
+last_word = ""  # Need this to check against two-word symbols.
+current_word = ""  # All keyboard presses gets recorded here and then recinded once space is pressed.
 keyboard = Controller()
 ctrl_modifier = False
 
@@ -20,18 +27,18 @@ def add_to_word(character: str) -> None:
     """
     Updates global word if character is in alphabet.
     """
-    global CURRENT_WORD
+    global current_word
 
     character = character.replace("'", "")
     if character in ALPHABET:
-        CURRENT_WORD += character
+        current_word += character
 
 
 def is_space(key):
     """
-    Resets CURRENT WORD and returns True if key is space, False otherwise.
+    Returns True if key is space, False otherwise.
     """
-    global CURRENT_WORD, LAST_WORD
+    global current_word, last_word
 
     if key == Key.space:
         return True
@@ -40,15 +47,20 @@ def is_space(key):
 
 
 def is_symbol(symbol: str) -> bool:
-    global CURRENT_WORD, LAST_WORD
-    phrase = LAST_WORD + " " + CURRENT_WORD
+    """
+    Checks if user has typed anything that corresponds to one of the
+    defined symbols, and then presses backspace to delete that/those
+    words before returning True or False to caller function.
+    """
+    global current_word, last_word
+    phrase = last_word + " " + current_word
 
-    if symbol == CURRENT_WORD:
+    if symbol == current_word:
         # You are currently pressing ctrl, so we only need to
         # press backspace once to delete the last word you typed.
         keyboard.press(Key.backspace)
         keyboard.release(Key.backspace)
-        CURRENT_WORD = ""
+        current_word = ""
         return True
 
     elif symbol == phrase:
@@ -58,16 +70,16 @@ def is_symbol(symbol: str) -> bool:
         keyboard.release(Key.backspace)
         keyboard.press(Key.backspace)
         keyboard.release(Key.backspace)
-        CURRENT_WORD = ""
+        current_word = ""
         return True
 
     else:
         return False
 
 
-def write_matching_symbols() -> None:
+def replace_matching_symbols() -> None:
     """..."""
-    global CURRENT_WORD, LAST_WORD
+    global current_word, last_word
 
     if is_symbol("and"):
         keyboard.type("∧")
@@ -176,24 +188,24 @@ def write_matching_symbols() -> None:
 
 
 def on_press(key):
-    global CURRENT_WORD, LAST_WORD, ctrl_modifier
+    global current_word, last_word, ctrl_modifier
 
     if is_space(key):
 
         # If ctrl was the last pressed key before space, write_matching_symbols
         if ctrl_modifier:
-            write_matching_symbols()
+            replace_matching_symbols()
             ctrl_modifier = False
 
         # Update words
-        LAST_WORD = CURRENT_WORD
-        CURRENT_WORD = ""
+        last_word = current_word
+        current_word = ""
         return
 
     # Set ctrl_modifier to True if key is ctrl, otherwise reset it
     ctrl_modifier = True if key == Key.ctrl_l else False
 
-    # Converts the native KeyCode type to str before adding it to CURRENT_WORD
+    # Converts the native KeyCode type to str before adding it to current_word
     add_to_word(key.__str__())
 
 
